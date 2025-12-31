@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/range_provider.dart';
-import 'screens/range_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        home: const RangeScreen(),
+        home: const SplashScreen(),
       ),
     );
   }

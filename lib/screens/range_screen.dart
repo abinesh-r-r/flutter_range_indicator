@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/range_provider.dart';
 import '../widgets/range_bar.dart';
+import 'package:flutter/cupertino.dart';
 
 /// Main screen displaying the TextField and RangeBar
 class RangeScreen extends StatelessWidget {
@@ -42,7 +43,11 @@ class RangeScreen extends StatelessWidget {
           builder: (context, provider, child) {
             if (provider.isLoading) {
               return const Center(
-                child: CircularProgressIndicator(),
+                child: CupertinoActivityIndicator(
+                  animating: true,
+                  radius: 30,
+                  color: Color.fromARGB(255, 134, 130, 130),
+                ),
               );
             }
 
@@ -422,8 +427,8 @@ class _ValueTextFieldState extends State<_ValueTextField> {
 
         final doubleValue = double.tryParse(value);
         if (doubleValue != null) {
-          // Check if value is less than 10000
-          if (doubleValue >= 10000) {
+          // Check if value is less than 10000000
+          if (doubleValue >= 10000000) {
             return;
           }
 
