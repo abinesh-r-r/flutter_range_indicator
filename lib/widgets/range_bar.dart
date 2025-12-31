@@ -56,9 +56,9 @@ class _RangeBarPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double horizontalPadding = 16.0;
-    final double barHeight = 28.0;
-    final double barTop = 35.0; // Space for top labels
+    const double horizontalPadding = 16.0;
+    const double barHeight = 28.0;
+    const double barTop = 35.0; // Space for top labels
     final double width = size.width;
     final double drawWidth = width - (horizontalPadding * 2);
     final double totalSpan = maxValue - minValue;
@@ -70,7 +70,7 @@ class _RangeBarPainter extends CustomPainter {
     // Define the bar area as a rounded rectangle
     RRect barRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(horizontalPadding, barTop, drawWidth, barHeight),
-      Radius.circular(barHeight / 2),
+      const Radius.circular(barHeight / 2),
     );
 
     // 1. Draw Background Bar (ensures rounded ends are visible even if segments don't cover them)
@@ -101,7 +101,7 @@ class _RangeBarPainter extends CustomPainter {
     canvas.restore();
 
     // Draw Labels with alternating positions
-    final textStyle = const TextStyle(
+    const textStyle = TextStyle(
       color: Colors.black87,
       fontSize: 14,
       fontWeight: FontWeight.w500,
@@ -129,7 +129,8 @@ class _RangeBarPainter extends CustomPainter {
       else if (i == boundaries.length - 1) align = TextAlign.right;
 
       // Format value to remove decimal if it's an integer
-      String labelText = value % 1 == 0 ? value.toInt().toString() : value.toString();
+      String labelText =
+          value % 1 == 0 ? value.toInt().toString() : value.toString();
       _drawText(canvas, labelText, Offset(positionX, positionY), textStyle,
           align: align);
     }
@@ -137,10 +138,10 @@ class _RangeBarPainter extends CustomPainter {
     // Draw Indicator (Triangle) only if inputValue is not null
     if (inputValue != null) {
       final double clampedValue = inputValue!.clamp(minValue, maxValue);
-      final double indicatorX =
-          horizontalPadding + ((clampedValue - minValue) / totalSpan) * drawWidth;
-      final double triangleTop = barTop + barHeight + 2;
-      final double triangleSize = 20.0;
+      final double indicatorX = horizontalPadding +
+          ((clampedValue - minValue) / totalSpan) * drawWidth;
+      const double triangleTop = barTop + barHeight + 2;
+      const double triangleSize = 20.0;
 
       final Path trianglePath = Path();
       trianglePath.moveTo(indicatorX, triangleTop); // Top point
@@ -154,16 +155,18 @@ class _RangeBarPainter extends CustomPainter {
       canvas.drawPath(trianglePath, paint);
 
       // Draw Current Value Label below triangle
-      final valueTextStyle = const TextStyle(
+      const valueTextStyle = TextStyle(
         color: Colors.black,
         fontSize: 18,
         fontWeight: FontWeight.bold,
       );
 
       // Format input value to show up to 2 decimal places if needed
-      String valueText = inputValue! % 1 == 0 
-          ? inputValue!.toInt().toString() 
-          : inputValue!.toStringAsFixed(2).replaceAll(RegExp(r"([.]*0+)(?!.*\d)"), "");
+      String valueText = inputValue! % 1 == 0
+          ? inputValue!.toInt().toString()
+          : inputValue!
+              .toStringAsFixed(2)
+              .replaceAll(RegExp(r"([.]*0+)(?!.*\d)"), "");
 
       _drawText(canvas, valueText,
           Offset(indicatorX, triangleTop + triangleSize + 4), valueTextStyle,

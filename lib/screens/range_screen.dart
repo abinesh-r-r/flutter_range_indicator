@@ -10,47 +10,55 @@ class RangeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Range Indicator',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        elevation: 0,
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () => _showExitConfirmationDialog(context),
-              tooltip: 'Close App',
-            ),
+    return PopScope(
+      canPop: false,
+      // ignore: deprecated_member_use
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        _showExitConfirmationDialog(context);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'Range Indicator',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-        ],
-      ),
-      body: Consumer<RangeProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+          elevation: 0,
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () => _showExitConfirmationDialog(context),
+                tooltip: 'Close App',
+              ),
+            ),
+          ],
+        ),
+        body: Consumer<RangeProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
 
-          if (provider.error != null) {
-            return _buildErrorView(context, provider);
-          }
+            if (provider.error != null) {
+              return _buildErrorView(context, provider);
+            }
 
-          if (provider.ranges.isEmpty) {
-            return const Center(
-              child: Text('No ranges available'),
-            );
-          }
+            if (provider.ranges.isEmpty) {
+              return const Center(
+                child: Text('No ranges available'),
+              );
+            }
 
-          return _buildMainContent(context, provider);
-        },
+            return _buildMainContent(context, provider);
+          },
+        ),
       ),
     );
   }
@@ -109,13 +117,18 @@ class RangeScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            Text(
-              provider.error ?? 'Unknown error occurred',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey.shade600,
-                  ),
-              textAlign: TextAlign.center,
-            ),
+            if (provider.error != null &&
+                (provider.error!.contains('SocketException') ||
+                    provider.error!.contains('timeout') ||
+                    provider.error!.contains('Network is unreachable') ||
+                    provider.error!.contains('Failed host lookup')))
+              Text(
+                'Please check your internet connection',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey.shade600,
+                    ),
+                textAlign: TextAlign.center,
+              ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () => provider.retry(),
@@ -155,7 +168,7 @@ class RangeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Enter Value',
                     style: TextStyle(
                       fontSize: 18,
@@ -248,7 +261,7 @@ class RangeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Range Visualization',
                     style: TextStyle(
                       fontSize: 18,
