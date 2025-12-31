@@ -222,13 +222,12 @@ class RangeScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'Value: ${provider.inputValue}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            'Value: ${provider.inputValue! % 1 == 0 ? provider.inputValue!.toInt() : provider.inputValue}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade800,
+                            ),
                           ),
                         ],
                       ),
@@ -313,7 +312,7 @@ class RangeScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${range.min} - ${range.max}',
+                    '${range.min % 1 == 0 ? range.min.toInt() : range.min} - ${range.max % 1 == 0 ? range.max.toInt() : range.max}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey.shade600,
                         ),
@@ -328,8 +327,8 @@ class RangeScreen extends StatelessWidget {
 
 /// Stateful widget to manage TextField controller properly
 class _ValueTextField extends StatefulWidget {
-  final int? initialValue;
-  final ValueChanged<int?> onValueChanged;
+  final double? initialValue;
+  final ValueChanged<double?> onValueChanged;
 
   const _ValueTextField({
     required this.initialValue,
@@ -348,7 +347,11 @@ class _ValueTextFieldState extends State<_ValueTextField> {
   void initState() {
     super.initState();
     _controller = TextEditingController(
-      text: widget.initialValue?.toString() ?? '',
+      text: widget.initialValue != null
+          ? (widget.initialValue! % 1 == 0
+              ? widget.initialValue!.toInt().toString()
+              : widget.initialValue.toString())
+          : '',
     );
   }
 
@@ -357,7 +360,11 @@ class _ValueTextFieldState extends State<_ValueTextField> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.initialValue != widget.initialValue &&
         !_isUpdatingFromProvider) {
-      _controller.text = widget.initialValue?.toString() ?? '';
+      _controller.text = widget.initialValue != null
+          ? (widget.initialValue! % 1 == 0
+              ? widget.initialValue!.toInt().toString()
+              : widget.initialValue.toString())
+          : '';
     }
   }
 
@@ -371,7 +378,11 @@ class _ValueTextFieldState extends State<_ValueTextField> {
   Widget build(BuildContext context) {
     return TextField(
       controller: _controller,
-      keyboardType: TextInputType.number,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+        LengthLimitingTextInputFormatter(7), // Allows for "9999.99"
+      ],
       decoration: InputDecoration(
         // labelText: 'Enter Value',
         // labelStyle: const TextStyle(
@@ -392,10 +403,19 @@ class _ValueTextFieldState extends State<_ValueTextField> {
           Future.microtask(() => _isUpdatingFromProvider = false);
           return;
         }
-        final intValue = int.tryParse(value);
-        if (intValue != null) {
+
+        // Handle trailing decimal point
+        if (value.endsWith('.')) return;
+
+        final doubleValue = double.tryParse(value);
+        if (doubleValue != null) {
+          // Check if value is less than 10000
+          if (doubleValue >= 10000) {
+            return;
+          }
+
           _isUpdatingFromProvider = true;
-          widget.onValueChanged(intValue);
+          widget.onValueChanged(doubleValue);
           // Reset flag after a microtask to allow provider update
           Future.microtask(() => _isUpdatingFromProvider = false);
         }

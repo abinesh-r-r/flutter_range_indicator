@@ -4,9 +4,9 @@ import '../models/range_model.dart';
 /// A dynamic horizontal bar widget that visualizes ranges with an indicator
 class RangeBar extends StatelessWidget {
   final List<RangeModel> ranges;
-  final int? inputValue;
-  final int minValue;
-  final int maxValue;
+  final double? inputValue;
+  final double minValue;
+  final double maxValue;
 
   const RangeBar({
     super.key,
@@ -43,9 +43,9 @@ class RangeBar extends StatelessWidget {
 
 class _RangeBarPainter extends CustomPainter {
   final List<RangeModel> ranges;
-  final int? inputValue;
-  final int minValue;
-  final int maxValue;
+  final double? inputValue;
+  final double minValue;
+  final double maxValue;
 
   _RangeBarPainter({
     required this.ranges,
@@ -61,7 +61,7 @@ class _RangeBarPainter extends CustomPainter {
     final double barTop = 35.0; // Space for top labels
     final double width = size.width;
     final double drawWidth = width - (horizontalPadding * 2);
-    final double totalSpan = (maxValue - minValue).toDouble();
+    final double totalSpan = maxValue - minValue;
 
     if (totalSpan <= 0) return;
 
@@ -81,7 +81,7 @@ class _RangeBarPainter extends CustomPainter {
     canvas.save();
     canvas.clipRRect(barRect);
 
-    double lastMax = minValue.toDouble();
+    double lastMax = minValue;
     for (var range in ranges) {
       // Use absolute positioning to ensure alignment with labels and indicator
       final double startX =
@@ -96,7 +96,7 @@ class _RangeBarPainter extends CustomPainter {
         paint,
       );
 
-      lastMax = range.max.toDouble();
+      lastMax = range.max;
     }
     canvas.restore();
 
@@ -108,13 +108,13 @@ class _RangeBarPainter extends CustomPainter {
     );
 
     // Collect all boundary values
-    List<int> boundaries = [minValue];
+    List<double> boundaries = [minValue];
     for (var range in ranges) {
       boundaries.add(range.max);
     }
 
     for (int i = 0; i < boundaries.length; i++) {
-      final int value = boundaries[i];
+      final double value = boundaries[i];
       final double positionX =
           horizontalPadding + ((value - minValue) / totalSpan) * drawWidth;
 
@@ -128,13 +128,15 @@ class _RangeBarPainter extends CustomPainter {
         align = TextAlign.left;
       else if (i == boundaries.length - 1) align = TextAlign.right;
 
-      _drawText(canvas, '$value', Offset(positionX, positionY), textStyle,
+      // Format value to remove decimal if it's an integer
+      String labelText = value % 1 == 0 ? value.toInt().toString() : value.toString();
+      _drawText(canvas, labelText, Offset(positionX, positionY), textStyle,
           align: align);
     }
 
     // Draw Indicator (Triangle) only if inputValue is not null
     if (inputValue != null) {
-      final double clampedValue = inputValue!.clamp(minValue, maxValue).toDouble();
+      final double clampedValue = inputValue!.clamp(minValue, maxValue);
       final double indicatorX =
           horizontalPadding + ((clampedValue - minValue) / totalSpan) * drawWidth;
       final double triangleTop = barTop + barHeight + 2;
@@ -158,7 +160,12 @@ class _RangeBarPainter extends CustomPainter {
         fontWeight: FontWeight.bold,
       );
 
-      _drawText(canvas, '$inputValue',
+      // Format input value to show up to 2 decimal places if needed
+      String valueText = inputValue! % 1 == 0 
+          ? inputValue!.toInt().toString() 
+          : inputValue!.toStringAsFixed(2).replaceAll(RegExp(r"([.]*0+)(?!.*\d)"), "");
+
+      _drawText(canvas, valueText,
           Offset(indicatorX, triangleTop + triangleSize + 4), valueTextStyle,
           align: TextAlign.center);
     }

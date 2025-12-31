@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 /// Model representing a single range with its properties
 class RangeModel {
-  final int min;
-  final int max;
+  final double min;
+  final double max;
   final String meaning;
   final Color color;
 
@@ -23,8 +23,8 @@ class RangeModel {
       throw FormatException('Invalid range format: $rangeString');
     }
 
-    final min = int.parse(parts[0].trim());
-    final max = int.parse(parts[1].trim());
+    final min = double.parse(parts[0].trim());
+    final max = double.parse(parts[1].trim());
     final meaning = json['meaning'] as String;
     final colorHex = json['color'] as String;
 
@@ -48,11 +48,11 @@ class RangeModel {
   }
 
   /// Check if a value falls within this range
-  bool contains(int value) {
+  bool contains(double value) {
     return value >= min && value <= max;
   }
 
   /// Get the total span of this range
-  int get span => max - min;
+  double get span => max - min;
 }
 

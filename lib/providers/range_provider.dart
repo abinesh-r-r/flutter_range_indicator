@@ -9,21 +9,21 @@ class RangeProvider extends ChangeNotifier {
   List<RangeModel> _ranges = [];
   bool _isLoading = false;
   String? _error;
-  int? _inputValue;
+  double? _inputValue;
 
   List<RangeModel> get ranges => _ranges;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  int? get inputValue => _inputValue;
+  double? get inputValue => _inputValue;
 
   /// Get the minimum value from all ranges
-  int get minValue {
+  double get minValue {
     if (_ranges.isEmpty) return 0;
     return _ranges.map((r) => r.min).reduce((a, b) => a < b ? a : b);
   }
 
   /// Get the maximum value from all ranges
-  int get maxValue {
+  double get maxValue {
     if (_ranges.isEmpty) return 100;
     return _ranges.map((r) => r.max).reduce((a, b) => a > b ? a : b);
   }
@@ -72,7 +72,7 @@ class RangeProvider extends ChangeNotifier {
   }
 
   /// Update the input value
-  void updateInputValue(int? value) {
+  void updateInputValue(double? value) {
     _inputValue = value;
     notifyListeners();
   }
