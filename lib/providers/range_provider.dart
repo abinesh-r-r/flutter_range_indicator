@@ -9,12 +9,12 @@ class RangeProvider extends ChangeNotifier {
   List<RangeModel> _ranges = [];
   bool _isLoading = false;
   String? _error;
-  int _inputValue = 0;
+  int? _inputValue;
 
   List<RangeModel> get ranges => _ranges;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  int get inputValue => _inputValue;
+  int? get inputValue => _inputValue;
 
   /// Get the minimum value from all ranges
   int get minValue {
@@ -30,9 +30,9 @@ class RangeProvider extends ChangeNotifier {
 
   /// Get the meaning of the current input value
   String? get currentMeaning {
-    if (_ranges.isEmpty) return null;
+    if (_ranges.isEmpty || _inputValue == null) return null;
     for (var range in _ranges) {
-      if (range.contains(_inputValue)) {
+      if (range.contains(_inputValue!)) {
         return range.meaning;
       }
     }
@@ -41,9 +41,9 @@ class RangeProvider extends ChangeNotifier {
 
   /// Get the color of the current input value's range
   Color? get currentColor {
-    if (_ranges.isEmpty) return null;
+    if (_ranges.isEmpty || _inputValue == null) return null;
     for (var range in _ranges) {
-      if (range.contains(_inputValue)) {
+      if (range.contains(_inputValue!)) {
         return range.color;
       }
     }
@@ -60,10 +60,8 @@ class RangeProvider extends ChangeNotifier {
       _ranges = await _apiService.fetchRanges();
       _error = null;
       
-      // Set initial input value to the minimum if ranges are loaded
-      if (_ranges.isNotEmpty) {
-        _inputValue = minValue;
-      }
+      // Set initial input value to null (empty)
+      _inputValue = null;
     } catch (e) {
       _error = e.toString();
       _ranges = [];
@@ -74,7 +72,7 @@ class RangeProvider extends ChangeNotifier {
   }
 
   /// Update the input value
-  void updateInputValue(int value) {
+  void updateInputValue(int? value) {
     _inputValue = value;
     notifyListeners();
   }

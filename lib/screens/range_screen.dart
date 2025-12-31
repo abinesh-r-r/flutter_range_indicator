@@ -25,7 +25,7 @@ class RangeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(12.0),
             child: IconButton(
               icon: const Icon(Icons.logout),
-              onPressed: () => SystemNavigator.pop(),
+              onPressed: () => _showExitConfirmationDialog(context),
               tooltip: 'Close App',
             ),
           ),
@@ -52,6 +52,40 @@ class RangeScreen extends StatelessWidget {
           return _buildMainContent(context, provider);
         },
       ),
+    );
+  }
+
+  Future<void> _showExitConfirmationDialog(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Exit App'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Are you sure you want to exit?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Exit'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                SystemNavigator.pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -123,78 +157,82 @@ class RangeScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Enter Value',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   _ValueTextField(
                     initialValue: provider.inputValue,
                     onValueChanged: (value) => provider.updateInputValue(value),
                   ),
                   const SizedBox(height: 16),
                   // Current value info
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: currentColor?.withOpacity(0.1) ??
-                          Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: currentColor ?? Colors.grey.shade300,
-                        width: 2,
+                  if (provider.inputValue != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: currentColor?.withOpacity(0.1) ??
+                            Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: currentColor ?? Colors.grey.shade300,
+                          width: 2,
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        if (currentColor != null)
-                          Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: currentColor,
-                              shape: BoxShape.circle,
+                      child: Row(
+                        children: [
+                          if (currentColor != null)
+                            Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: currentColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          if (currentColor != null) const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Text(
+                                //   'Current Status',
+                                //   style: Theme.of(context)
+                                //       .textTheme
+                                //       .bodySmall
+                                //       ?.copyWith(
+                                //         color: Colors.grey.shade600,
+                                //       ),
+                                // ),
+                                // const SizedBox(height: 4),
+                                Text(
+                                  currentMeaning ?? 'Out of Range',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: currentColor ??
+                                            Colors.grey.shade700,
+                                      ),
+                                ),
+                              ],
                             ),
                           ),
-                        if (currentColor != null) const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Text(
-                              //   'Current Status',
-                              //   style: Theme.of(context)
-                              //       .textTheme
-                              //       .bodySmall
-                              //       ?.copyWith(
-                              //         color: Colors.grey.shade600,
-                              //       ),
-                              // ),
-                              // const SizedBox(height: 4),
-                              Text(
-                                currentMeaning ?? 'Out of Range',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color:
-                                          currentColor ?? Colors.grey.shade700,
-                                    ),
-                              ),
-                            ],
+                          Text(
+                            'Value: ${provider.inputValue}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
-                        ),
-                        Text(
-                          'Value: ${provider.inputValue}',
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -213,9 +251,10 @@ class RangeScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Range Visualization',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   RangeBar(
@@ -289,8 +328,8 @@ class RangeScreen extends StatelessWidget {
 
 /// Stateful widget to manage TextField controller properly
 class _ValueTextField extends StatefulWidget {
-  final int initialValue;
-  final ValueChanged<int> onValueChanged;
+  final int? initialValue;
+  final ValueChanged<int?> onValueChanged;
 
   const _ValueTextField({
     required this.initialValue,
@@ -309,7 +348,7 @@ class _ValueTextFieldState extends State<_ValueTextField> {
   void initState() {
     super.initState();
     _controller = TextEditingController(
-      text: widget.initialValue.toString(),
+      text: widget.initialValue?.toString() ?? '',
     );
   }
 
@@ -318,7 +357,7 @@ class _ValueTextFieldState extends State<_ValueTextField> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.initialValue != widget.initialValue &&
         !_isUpdatingFromProvider) {
-      _controller.text = widget.initialValue.toString();
+      _controller.text = widget.initialValue?.toString() ?? '';
     }
   }
 
@@ -334,14 +373,25 @@ class _ValueTextFieldState extends State<_ValueTextField> {
       controller: _controller,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
-        labelText: 'Enter Value',
+        // labelText: 'Enter Value',
+        // labelStyle: const TextStyle(
+        //   fontSize: 20,
+        //   // fontWeight: FontWeight.bold,
+        // ),
         hintText: 'Enter a numeric value',
+        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),
         // prefixIcon: const Icon(Icons.numbers),
       ),
       onChanged: (value) {
+        if (value.isEmpty) {
+          _isUpdatingFromProvider = true;
+          widget.onValueChanged(null);
+          Future.microtask(() => _isUpdatingFromProvider = false);
+          return;
+        }
         final intValue = int.tryParse(value);
         if (intValue != null) {
           _isUpdatingFromProvider = true;

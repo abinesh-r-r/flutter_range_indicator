@@ -4,7 +4,7 @@ import '../models/range_model.dart';
 /// A dynamic horizontal bar widget that visualizes ranges with an indicator
 class RangeBar extends StatelessWidget {
   final List<RangeModel> ranges;
-  final int inputValue;
+  final int? inputValue;
   final int minValue;
   final int maxValue;
 
@@ -43,7 +43,7 @@ class RangeBar extends StatelessWidget {
 
 class _RangeBarPainter extends CustomPainter {
   final List<RangeModel> ranges;
-  final int inputValue;
+  final int? inputValue;
   final int minValue;
   final int maxValue;
 
@@ -132,34 +132,36 @@ class _RangeBarPainter extends CustomPainter {
           align: align);
     }
 
-    // Draw Indicator (Triangle)
-    final double clampedValue = inputValue.clamp(minValue, maxValue).toDouble();
-    final double indicatorX =
-        horizontalPadding + ((clampedValue - minValue) / totalSpan) * drawWidth;
-    final double triangleTop = barTop + barHeight + 2;
-    final double triangleSize = 20.0;
+    // Draw Indicator (Triangle) only if inputValue is not null
+    if (inputValue != null) {
+      final double clampedValue = inputValue!.clamp(minValue, maxValue).toDouble();
+      final double indicatorX =
+          horizontalPadding + ((clampedValue - minValue) / totalSpan) * drawWidth;
+      final double triangleTop = barTop + barHeight + 2;
+      final double triangleSize = 20.0;
 
-    final Path trianglePath = Path();
-    trianglePath.moveTo(indicatorX, triangleTop); // Top point
-    trianglePath.lineTo(indicatorX - triangleSize / 2,
-        triangleTop + triangleSize); // Bottom left
-    trianglePath.lineTo(indicatorX + triangleSize / 2,
-        triangleTop + triangleSize); // Bottom right
-    trianglePath.close();
+      final Path trianglePath = Path();
+      trianglePath.moveTo(indicatorX, triangleTop); // Top point
+      trianglePath.lineTo(indicatorX - triangleSize / 2,
+          triangleTop + triangleSize); // Bottom left
+      trianglePath.lineTo(indicatorX + triangleSize / 2,
+          triangleTop + triangleSize); // Bottom right
+      trianglePath.close();
 
-    paint.color = Colors.black;
-    canvas.drawPath(trianglePath, paint);
+      paint.color = Colors.black;
+      canvas.drawPath(trianglePath, paint);
 
-    // Draw Current Value Label below triangle
-    final valueTextStyle = const TextStyle(
-      color: Colors.black,
-      fontSize: 18,
-      fontWeight: FontWeight.bold,
-    );
+      // Draw Current Value Label below triangle
+      final valueTextStyle = const TextStyle(
+        color: Colors.black,
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+      );
 
-    _drawText(canvas, '$inputValue',
-        Offset(indicatorX, triangleTop + triangleSize + 4), valueTextStyle,
-        align: TextAlign.center);
+      _drawText(canvas, '$inputValue',
+          Offset(indicatorX, triangleTop + triangleSize + 4), valueTextStyle,
+          align: TextAlign.center);
+    }
   }
 
   void _drawText(Canvas canvas, String text, Offset position, TextStyle style,
