@@ -117,7 +117,7 @@ class RangeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Error Loading Data',
+              'Unable to Load Data...',
               style: Theme.of(context).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
@@ -129,7 +129,7 @@ class RangeScreen extends StatelessWidget {
                     provider.error!.contains('Failed host lookup')))
               Text(
                 'Please check your internet connection',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Colors.grey.shade600,
                     ),
                 textAlign: TextAlign.center,
