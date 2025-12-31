@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => RangeProvider()..fetchRanges(),
+      create: (_) => RangeProvider(),
       child: MaterialApp(
         title: 'Range Indicator',
         debugShowCheckedModeBanner: false,
