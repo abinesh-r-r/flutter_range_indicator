@@ -22,134 +22,171 @@ class RangeBar extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final totalSpan = maxValue - minValue;
-    if (totalSpan == 0) {
-      return const SizedBox.shrink();
-    }
-
     return LayoutBuilder(
       builder: (context, constraints) {
-        final barWidth = constraints.maxWidth;
-        const barHeight = 40.0;
-
-        // Calculate indicator position (clamped to bar bounds)
-        final clampedValue = inputValue.clamp(minValue, maxValue);
-        final indicatorPosition = ((clampedValue - minValue) / totalSpan) * barWidth;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Bar visualization
-            Stack(
-              children: [
-                // Background bar with sections
-                Container(
-                  height: barHeight,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey.shade300, width: 1),
-                  ),
-                  child: Row(
-                    children: _buildSections(barWidth, totalSpan),
-                  ),
-                ),
-                // Indicator line
-                Positioned(
-                  left: indicatorPosition.clamp(0.0, barWidth - 2),
-                  child: Container(
-                    width: 2,
-                    height: barHeight,
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+        return SizedBox(
+          width: constraints.maxWidth,
+          height: 100, // Increased height for labels and indicator
+          child: CustomPaint(
+            painter: _RangeBarPainter(
+              ranges: ranges,
+              inputValue: inputValue,
+              minValue: minValue,
+              maxValue: maxValue,
             ),
-            const SizedBox(height: 8),
-            // Labels below the bar
-            _buildLabels(barWidth, totalSpan),
-          ],
+          ),
         );
       },
     );
   }
-
-  /// Build individual range sections
-  List<Widget> _buildSections(double barWidth, int totalSpan) {
-    if (ranges.isEmpty || totalSpan == 0) {
-      return [];
-    }
-
-    return ranges.map((range) {
-      final sectionWidth = (range.span / totalSpan) * barWidth;
-      return Container(
-        width: sectionWidth,
-        decoration: BoxDecoration(
-          color: range.color,
-          borderRadius: _getBorderRadiusForSection(range, ranges),
-        ),
-      );
-    }).toList();
-  }
-
-  /// Get border radius for section (rounded corners on first and last sections)
-  BorderRadius _getBorderRadiusForSection(RangeModel range, List<RangeModel> allRanges) {
-    final isFirst = range == allRanges.first;
-    final isLast = range == allRanges.last;
-
-    if (isFirst && isLast) {
-      return BorderRadius.circular(8);
-    } else if (isFirst) {
-      return const BorderRadius.only(
-        topLeft: Radius.circular(8),
-        bottomLeft: Radius.circular(8),
-      );
-    } else if (isLast) {
-      return const BorderRadius.only(
-        topRight: Radius.circular(8),
-        bottomRight: Radius.circular(8),
-      );
-    }
-    return BorderRadius.zero;
-  }
-
-  /// Build labels below the bar
-  Widget _buildLabels(double barWidth, int totalSpan) {
-    if (ranges.isEmpty || totalSpan == 0) {
-      return const SizedBox.shrink();
-    }
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Min value label
-        Text(
-          '$minValue',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        // Max value label
-        Text(
-          '$maxValue',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
 }
 
+class _RangeBarPainter extends CustomPainter {
+  final List<RangeModel> ranges;
+  final int inputValue;
+  final int minValue;
+  final int maxValue;
+
+  _RangeBarPainter({
+    required this.ranges,
+    required this.inputValue,
+    required this.minValue,
+    required this.maxValue,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double horizontalPadding = 16.0;
+    final double barHeight = 28.0;
+    final double barTop = 35.0; // Space for top labels
+    final double width = size.width;
+    final double drawWidth = width - (horizontalPadding * 2);
+    final double totalSpan = (maxValue - minValue).toDouble();
+
+    if (totalSpan <= 0) return;
+
+    final Paint paint = Paint()..style = PaintingStyle.fill;
+
+    // Define the bar area as a rounded rectangle
+    RRect barRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(horizontalPadding, barTop, drawWidth, barHeight),
+      Radius.circular(barHeight / 2),
+    );
+
+    // 1. Draw Background Bar (ensures rounded ends are visible even if segments don't cover them)
+    paint.color = Colors.grey.shade200;
+    canvas.drawRRect(barRect, paint);
+
+    // 2. Draw the bar segments
+    canvas.save();
+    canvas.clipRRect(barRect);
+
+    double lastMax = minValue.toDouble();
+    for (var range in ranges) {
+      // Use absolute positioning to ensure alignment with labels and indicator
+      final double startX =
+          horizontalPadding + ((lastMax - minValue) / totalSpan) * drawWidth;
+      final double endX =
+          horizontalPadding + ((range.max - minValue) / totalSpan) * drawWidth;
+
+      paint.color = range.color;
+      canvas.drawRect(
+        Rect.fromLTWH(
+            startX, barTop, (endX - startX).clamp(0, drawWidth), barHeight),
+        paint,
+      );
+
+      lastMax = range.max.toDouble();
+    }
+    canvas.restore();
+
+    // Draw Labels with alternating positions
+    final textStyle = const TextStyle(
+      color: Colors.black87,
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+    );
+
+    // Collect all boundary values
+    List<int> boundaries = [minValue];
+    for (var range in ranges) {
+      boundaries.add(range.max);
+    }
+
+    for (int i = 0; i < boundaries.length; i++) {
+      final int value = boundaries[i];
+      final double positionX =
+          horizontalPadding + ((value - minValue) / totalSpan) * drawWidth;
+
+      // Alternate: Even indices (0, 2, 4...) -> Below, Odd indices (1, 3, 5...) -> Above
+      final bool isAbove = (i % 2 != 0);
+      final double positionY = isAbove ? barTop - 24 : barTop + barHeight + 8;
+
+      // Align text: First left, Last right, others center
+      TextAlign align = TextAlign.center;
+      if (i == 0)
+        align = TextAlign.left;
+      else if (i == boundaries.length - 1) align = TextAlign.right;
+
+      _drawText(canvas, '$value', Offset(positionX, positionY), textStyle,
+          align: align);
+    }
+
+    // Draw Indicator (Triangle)
+    final double clampedValue = inputValue.clamp(minValue, maxValue).toDouble();
+    final double indicatorX =
+        horizontalPadding + ((clampedValue - minValue) / totalSpan) * drawWidth;
+    final double triangleTop = barTop + barHeight + 2;
+    final double triangleSize = 20.0;
+
+    final Path trianglePath = Path();
+    trianglePath.moveTo(indicatorX, triangleTop); // Top point
+    trianglePath.lineTo(indicatorX - triangleSize / 2,
+        triangleTop + triangleSize); // Bottom left
+    trianglePath.lineTo(indicatorX + triangleSize / 2,
+        triangleTop + triangleSize); // Bottom right
+    trianglePath.close();
+
+    paint.color = Colors.black;
+    canvas.drawPath(trianglePath, paint);
+
+    // Draw Current Value Label below triangle
+    final valueTextStyle = const TextStyle(
+      color: Colors.black,
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+    );
+
+    _drawText(canvas, '$inputValue',
+        Offset(indicatorX, triangleTop + triangleSize + 4), valueTextStyle,
+        align: TextAlign.center);
+  }
+
+  void _drawText(Canvas canvas, String text, Offset position, TextStyle style,
+      {TextAlign align = TextAlign.center}) {
+    final TextSpan span = TextSpan(text: text, style: style);
+    final TextPainter tp = TextPainter(
+      text: span,
+      textAlign: align,
+      textDirection: TextDirection.ltr,
+    );
+    tp.layout();
+
+    double x = position.dx;
+    if (align == TextAlign.center) {
+      x -= tp.width / 2;
+    } else if (align == TextAlign.right) {
+      x -= tp.width;
+    }
+
+    tp.paint(canvas, Offset(x, position.dy));
+  }
+
+  @override
+  bool shouldRepaint(covariant _RangeBarPainter oldDelegate) {
+    return oldDelegate.inputValue != inputValue ||
+        oldDelegate.ranges != ranges ||
+        oldDelegate.minValue != minValue ||
+        oldDelegate.maxValue != maxValue;
+  }
+}

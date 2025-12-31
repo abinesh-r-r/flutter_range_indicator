@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/range_provider.dart';
 import 'screens/range_screen.dart';
-import 'widgets/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,43 +30,8 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        home: const AppInitializer(),
+        home: const RangeScreen(),
       ),
     );
-  }
-}
-
-/// Widget that handles app initialization and shows splash screen
-class AppInitializer extends StatefulWidget {
-  const AppInitializer({super.key});
-
-  @override
-  State<AppInitializer> createState() => _AppInitializerState();
-}
-
-class _AppInitializerState extends State<AppInitializer> {
-  @override
-  void initState() {
-    super.initState();
-    _initializeApp();
-  }
-
-  Future<void> _initializeApp() async {
-    // Show splash screen for at least 2 seconds
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (mounted) {
-      // Navigate to main screen
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const RangeScreen(),
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return const SplashScreen();
   }
 }

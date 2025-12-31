@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/range_provider.dart';
@@ -11,9 +12,24 @@ class RangeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Range Indicator'),
-        elevation: 2,
+        title: const Text(
+          'Range Indicator',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
         centerTitle: true,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () => SystemNavigator.pop(),
+              tooltip: 'Close App',
+            ),
+          ),
+        ],
       ),
       body: Consumer<RangeProvider>(
         builder: (context, provider, child) {
@@ -121,7 +137,8 @@ class RangeScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: currentColor?.withOpacity(0.1) ?? Colors.grey.shade100,
+                      color: currentColor?.withOpacity(0.1) ??
+                          Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: currentColor ?? Colors.grey.shade300,
@@ -144,18 +161,25 @@ class RangeScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Current Status',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Colors.grey.shade600,
-                                    ),
-                              ),
-                              const SizedBox(height: 4),
+                              // Text(
+                              //   'Current Status',
+                              //   style: Theme.of(context)
+                              //       .textTheme
+                              //       .bodySmall
+                              //       ?.copyWith(
+                              //         color: Colors.grey.shade600,
+                              //       ),
+                              // ),
+                              // const SizedBox(height: 4),
                               Text(
                                 currentMeaning ?? 'Out of Range',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: currentColor ?? Colors.grey.shade700,
+                                      color:
+                                          currentColor ?? Colors.grey.shade700,
                                     ),
                               ),
                             ],
@@ -163,9 +187,10 @@ class RangeScreen extends StatelessWidget {
                         ),
                         Text(
                           'Value: ${provider.inputValue}',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                       ],
                     ),
@@ -291,7 +316,8 @@ class _ValueTextFieldState extends State<_ValueTextField> {
   @override
   void didUpdateWidget(_ValueTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialValue != widget.initialValue && !_isUpdatingFromProvider) {
+    if (oldWidget.initialValue != widget.initialValue &&
+        !_isUpdatingFromProvider) {
       _controller.text = widget.initialValue.toString();
     }
   }
@@ -308,12 +334,12 @@ class _ValueTextFieldState extends State<_ValueTextField> {
       controller: _controller,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
-        labelText: 'Numeric Value',
-        hintText: 'Enter a number',
+        labelText: 'Enter Value',
+        hintText: 'Enter a numeric value',
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        prefixIcon: const Icon(Icons.numbers),
+        // prefixIcon: const Icon(Icons.numbers),
       ),
       onChanged: (value) {
         final intValue = int.tryParse(value);
@@ -327,4 +353,3 @@ class _ValueTextFieldState extends State<_ValueTextField> {
     );
   }
 }
-
