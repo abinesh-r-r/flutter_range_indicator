@@ -20,6 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
   _initApp() async {
     // Use Future.microtask to ensure context is available for Provider
     Future.microtask(() async {
+      // ignore: use_build_context_synchronously
       final provider = Provider.of<RangeProvider>(context, listen: false);
       
       await Future.wait([

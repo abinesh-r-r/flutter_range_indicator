@@ -371,6 +371,9 @@ class _ValueTextFieldState extends State<_ValueTextField> {
               : widget.initialValue.toString())
           : '',
     );
+    _controller.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -407,12 +410,22 @@ class _ValueTextFieldState extends State<_ValueTextField> {
         //   fontSize: 20,
         //   // fontWeight: FontWeight.bold,
         // ),
-        hintText: 'Enter a numeric value',
+        hintText: 'Enter a value to see the range',
         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        // prefixIcon: const Icon(Icons.numbers),
+        suffixIcon: _controller.text.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear, color: Colors.grey),
+                onPressed: () {
+                  _controller.clear();
+                  _isUpdatingFromProvider = true;
+                  widget.onValueChanged(null);
+                  Future.microtask(() => _isUpdatingFromProvider = false);
+                },
+              )
+            : null,
       ),
       onChanged: (value) {
         if (value.isEmpty) {
